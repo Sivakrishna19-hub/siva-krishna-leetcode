@@ -1,0 +1,27 @@
+int strStr(char* haystack, char* needle) {
+    // I have used longer names for the clarity.
+    char *needle_temp = needle;
+    char *haystack_temp = haystack;
+
+    while (1) {
+        // if we reach the null terminator of needle, we know
+        // it must exist in haystack.
+        if (*needle_temp == '\0') {
+            return haystack_temp - haystack - (needle_temp - needle);
+        }
+
+        // otherwise, if we reach the null terminator of haystack,
+        // we know it must not contain needle.
+        if (*haystack_temp == '\0') return -1;
+        
+        // while their values are equal, walk both temporary
+        // pointers forward.
+        if (*needle_temp == *haystack_temp) needle_temp++; 
+        else {
+            if (needle_temp > needle) haystack_temp -= (needle_temp - needle);
+            needle_temp = needle;
+        }
+
+        haystack_temp++;
+    }
+}
