@@ -1,0 +1,61 @@
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+
+int length(long int n){ //Function to count the length of numbers
+    int len;
+    for(len=1;n>9;len++)   n/=10;
+    return len;
+}
+void ntos(int n,char *p, int beg){// Function to append a number starting from index beg
+    int count;
+    long int m; //Necessary for negation of the highest integer value
+    if(n>=0){
+        m=n;
+        count=length(n)+beg;
+    }
+    else{
+        m=-1*(long int)n;
+        count=length(m)+beg+1;
+        p[beg]='-';     //Adding minus sign for negative numbers
+     
+    }
+    if(m==0)    p[beg]=48;  //Edge case. 48 in ASCII is 0. The rest digts immediately follow zero
+    while(m!=0){
+        p[--count]=m%10+48;//The LSD is stored in the end and MSD at index beg after ASCII conversion
+        m/=10;
+    }
+    return ;
+}
+char** summaryRanges(int* nums, int numsSize, int* returnSize) {
+    char **result;
+    result=(char **)malloc((numsSize)*sizeof(char *));  //The maximum number of 1-D arrays will be if no ranges are present and all numbers have to be included as seperate elements
+    int i,j,k,l=0,len;
+    for(i=0;i<numsSize;i=j){
+        k=nums[i];
+        for(j=i+1;j<numsSize && ++k == nums[j];j++);    //Breaks when succesive elemnt is not the previous element+1 
+
+        if(nums[i]>=0)  len=length(nums[i]);
+        else    len=length(-1*(long int)nums[i])+1;
+
+        result[l]=(char *)malloc((len+1) * sizeof(char));   //memory allocation according to length of number
+        ntos(nums[i],result[l],0);
+
+        if(nums[i]!=nums[j-1]){
+            if(nums[j-1]>=0)    result[l]=(char*) realloc(result[l], (len+length((long int)nums[j-1])+3)*sizeof(char));
+            else    result[l]=(char*) realloc(result[l], (len+length(-1*(long int)nums[j-1])+4)*sizeof(char));  //Memory allocation according to sign and length of the end of range
+
+            ntos(nums[j-1],result[l],len+2);    //Appending the end of range into result[l]
+
+            result[l][len]='-';
+            result[l][len+1]='>';
+
+            if(nums[j-1]>=0)    result[l][len+length((long int)nums[j-1])+2]='\0';
+            else    result[l][len+length(-1*(long int)nums[j-1])+3]='\0';
+        }
+        else result[l][len]='\0';   //No memory allocation required if numbers are same.
+        l++;    //Next entry in result
+    }
+    *returnSize=l;  //return the number of entries
+    return result;
+}
