@@ -1,0 +1,110 @@
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     struct TreeNode *left;
+ *     struct TreeNode *right;
+ * };
+ */
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+struct node{
+    char* val;
+    struct node* next;
+    int size;
+};
+typedef struct _stack{
+    struct node* top;
+    int size;
+}Stack;
+int numDigits(int num){
+    if(num==0)
+        return 1;
+    int count=0;
+    if(num<0){
+        count++;//count the '-' sign
+        num=-num;//convert num to positive
+    }
+    while(num){
+        num/=10;
+        count++;
+    }
+    return count;
+}
+int toChar(char* str,int index,int num){
+    if(num==0){
+        str[index++]='0';
+        return index;
+    }
+    if(num<0){
+        str[index++]='-';
+        num=-num;
+    }
+    int digits=numDigits(num);
+    index+=digits;
+    while(num){
+        str[--index]=num%10+'0';
+        num/=10;
+    }
+    index+=digits;
+    return index;
+}
+void push(Stack* stack,int* temp,int index){
+    //create a char copy to store the temp string
+    //(index+1)nodes, ((index+1)-1)*2arrows, 1 terminating '\0' char
+    int size=((index+1)-1)*2+1; //add arrows and '\0' to size
+    for(int i=0;i<=index;i++){
+        size+=numDigits(temp[i]);//add nodes to size
+    }
+    char* copy=malloc(size*sizeof(char));
+    int j=0;//j: index of copy
+    for(int i=0;i<index;i++){ //i: index of temp
+        j=toChar(copy,j,temp[i]);
+        copy[j++]='-';
+        copy[j++]='>';
+    }
+    j=toChar(copy,j,temp[index]);
+    copy[j]='\0';
+    //create new node to store copy
+    struct node* newNode=malloc(sizeof(struct node));
+    newNode->val=copy;
+    newNode->next=stack->top;
+    newNode->size=size;
+    stack->top=newNode;
+    stack->size++;
+}
+char* pop(Stack* stack){
+    char* result=stack->top->val;
+    struct node* toDelete=stack->top;
+    stack->top=stack->top->next;
+    free(toDelete);
+    stack->size--;
+    return result;
+}
+void backtrack(struct TreeNode* root,Stack* stack,int* temp,int index){
+    if(root==NULL){
+        return;
+    }
+    temp[index]=root->val;
+    if(root->left==NULL && root->right==NULL){//leaf node
+        push(stack,temp,index);
+    }
+    if(root->left)
+        backtrack(root->left,stack,temp,index+1);
+    if(root->right)
+        backtrack(root->right,stack,temp,index+1);
+}
+char** binaryTreePaths(struct TreeNode* root, int* returnSize) {
+    Stack stack;
+    stack.top=NULL;stack.size=0;
+    int* temp=malloc(100*sizeof(int));
+    backtrack(root,&stack,temp,0);
+    //transfer from stack to returnArray
+    *returnSize=stack.size;
+    char** returnArray=malloc(*returnSize*sizeof(char*));
+    for(int i=0;i<*returnSize;i++){
+        returnArray[i]=pop(&stack);
+    }
+    return returnArray;
+}
