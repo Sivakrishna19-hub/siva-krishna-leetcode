@@ -1,0 +1,69 @@
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     struct TreeNode *left;
+ *     struct TreeNode *right;
+ * };
+ */
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int* postorderTraversal(struct TreeNode* root, int* returnSize) {
+    int size_of_answer = 8;
+    int elements_in_answer = 0;
+    int* answer = (int*)malloc(size_of_answer * sizeof(int));
+    if(answer == NULL)
+        exit(1);
+
+    *returnSize = 0;
+    if(root == NULL)
+        return answer;
+
+    int size_of_stack = 8;
+    struct TreeNode** stack = (struct TreeNode**)malloc(size_of_stack * sizeof(struct TreeNode*));
+    if(stack == NULL)
+        exit(1);
+
+    stack[0] = root;
+    int elements_in_stack = 1;
+    while(elements_in_stack){
+        if(stack[elements_in_stack - 1]->right == NULL && stack[elements_in_stack - 1]->left == NULL){
+            answer[elements_in_answer++] = stack[elements_in_stack - 1]->val;
+            if(elements_in_answer == size_of_answer){
+                size_of_answer *= 2;
+                answer = (int*)realloc(answer, size_of_answer * sizeof(int));
+                if(answer == NULL)
+                    exit(1);
+            }
+            elements_in_stack--;
+        } else{
+            struct TreeNode* current_element = stack[elements_in_stack - 1];
+            if(current_element->right != NULL){
+                stack[elements_in_stack] = current_element->right;
+                elements_in_stack++;
+                if(elements_in_stack == size_of_stack){
+                    size_of_stack *= 2;
+                    stack = (struct TreeNode**)realloc(stack, size_of_stack * sizeof(struct TreeNode*));
+                    if(stack == NULL)
+                        exit(1);
+                }
+                current_element->right = NULL;
+            }
+            if(current_element->left != NULL){
+                stack[elements_in_stack] = current_element->left;
+                elements_in_stack++;
+                if(elements_in_stack == size_of_stack){
+                    size_of_stack *= 2;
+                    stack = (struct TreeNode**)realloc(stack, size_of_stack * sizeof(struct TreeNode*));
+                    if(stack == NULL)
+                        exit(1);
+                }
+                current_element->left = NULL;
+            }
+        }
+    }
+
+    *returnSize = elements_in_answer;
+    return answer;
+}
